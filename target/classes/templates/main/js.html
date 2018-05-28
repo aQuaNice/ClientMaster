@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+
+
+	<!--     <div class="pace-activity"></div> -->
+
+	<script th:src="@{/js/jquery.js}"></script>
+	<script th:src="@{/js/bootstrap.min.js}"></script>
+	<script th:src="@{/js/plugins.js}"></script>
+
+	<script th:src="@{/js/jquery.counterup.min.js}"></script>
+	<script th:src="@{/js/jquery.waypoints.min.js}"></script>
+	<script th:src="@{/js/jquery.nicescroll.min.js}"></script>
+	<!--          <script th:src="@{/js/pace.js}"></script> -->
+	<script th:src="@{/js/wow.min.js}"></script>
+	<script th:src="@{/js/main.js}"></script>
+
+	<script>new WOW().init();</script>
+	<script>      
+		//<![CDATA[
+			//localStorage.clear();
+		var lcQty = 1;
+		var lctotJum=0;
+		var soft = {
+				getRemove :function(Obj,Data){
+// 					exisorder = $.grep(Obj, function(val) {
+//   			            return val.lcId != Data;
+// 					})
+// 					console.log(JSON.stringify(exisorder))
+//   			          localStorage.setItem("MyOrder", JSON.stringify(exisorder));
+// 					   soft.SetCount(exisorder);
+				},
+				getCalculate : function(Obj){
+					var exisorder = JSON.parse(localStorage.getItem("MyOrder"));
+					//console.log(JSON.stringify(exisorder))
+					 dataexis = $.map(exisorder, function(val, key) {
+			                if (val.lcId === $(Obj).data('id'))
+			                	if($(Obj).data('act') == 0){
+				                	if(val.lcJum > 1){
+				                	 val.lcJum = val.lcJum - 1
+				                	}else{
+				                		exisorder = $.grep(exisorder, function(val) {
+				      			            return val.lcId != $(Obj).data('id');
+				      			        })
+// 				                		soft.getRemove(exisorder,$(Obj).data('id'));
+				                	}
+			                	}else if($(Obj).data('act') == 1){
+			                		val.lcJum = val.lcJum + 1	
+			                	}else{
+			                		exisorder = $.grep(exisorder, function(val) {
+			      			            return val.lcId != $(Obj).data('id');
+			      			        })
+			                	}
+			                    return val;
+			            })
+			            
+			           // console.log(JSON.stringify(exisorder))
+			            localStorage.setItem("MyOrder", JSON.stringify(exisorder));
+					    soft.SetCount(exisorder);
+					
+				},
+				init : function(Obj){
+					$(".Orderitems").empty();
+					lctotJum = 0;
+					var exisorder = JSON.parse(localStorage.getItem("MyOrder"));
+					 if (exisorder) {
+						 for (var i = 0; i < exisorder.length; i++) {
+							 orderitem = '<div class="item pull-left">'
+										 +'<img src="'+exisorder[i].lcImg+'" alt="Product Name" class="pull-left" style="width:55px; height: 55px;" />'
+										 +'<div class="pull-left">'
+										 +'<p>'+exisorder[i].lcNm+'</p>'
+										 +'<p>Rp '+soft.FormatNumber(exisorder[i].lcPrice) +'&nbsp;<strong>x '+exisorder[i].lcJum+'</strong></p>'
+										 +'</div>'
+										 +'<a  onclick="soft.getCalculate(this)" data-act="2" class="trash" data-id="'+exisorder[i].lcId+'"><i class="fa fa-trash-o pull-left"></i></a>'
+										 +'<a  onclick="soft.getCalculate(this)" data-act="1" data-id="'+exisorder[i].lcId+'" class="trash minus"><i class="fa fa-plus-square pull-right"></i></a>'
+										 +'<a  onclick="soft.getCalculate(this)" data-act="0" data-id="'+exisorder[i].lcId+'" class="trash minus"><i class="fa fa-minus-square pull-right"></i></a>'										
+										 +'</div>'
+							 $(".Orderitems").prepend(orderitem);
+						 }
+						 $(".totitem").text(exisorder.length);
+						 soft.SetCount(exisorder);
+					 }
+				},
+				SetCount : function(Obj){
+					 	lctotJum=0;
+			            for (var i = 0; i < Obj.length; i++) {			               
+			                   lctotJum += parseFloat(Obj[i].lcJum) * parseFloat(Obj[i].lcPrice);
+			            }
+			            $(".subtot").text(soft.FormatNumber(lctotJum));
+			            $(".totbuy").text("to-do : "+soft.FormatNumber(lctotJum));
+			            $(".totitem").text(Obj.length);
+			            
+				},FormatNumber : function(Obj){
+					return Obj.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+				},addtocard : function(Obj){
+				 var exisorder = JSON.parse(localStorage.getItem("MyOrder"));
+					//console.log(JSON.stringify(exisorder))
+				
+				 if (exisorder) {
+			            dataexis = $.map(exisorder, function(val, key) {
+			                if (val.lcId === $(Obj).data('id'))
+			                    return val;
+			            })
+			        } else {
+			            dataexis = ''
+			        }
+				  if (dataexis != '') {
+					  lctotJum =0;
+			            for (var i = 0; i < exisorder.length; i++) {
+			                if (exisorder[i].lcId === $(Obj).data('id')) {
+			                    exisorder[i].lcJum += lcQty;
+			                    localStorage.setItem("MyOrder", JSON.stringify(exisorder))
+			                     console.log("exist order : "+localStorage.getItem("MyOrder"));
+			                    soft.SetCount(JSON.parse(localStorage.getItem("MyOrder")));
+			                    return;
+			                }
+			            }
+			           // console.log(lctotJum);
+			          //  $(".totbuy").text(lctotJum);
+			        } else {
+			            if (exisorder == null)
+			                exisorder = [];
+			            var entry = {
+			            		
+			                "lcNm": $(Obj).data('title'),
+			                "lcId": $(Obj).data('id'),
+			                //"lcEvId": lcEveid,
+			               	"lcPrice": parseFloat($(Obj).data('price')),
+			                "lcImg": $(Obj).data('img'),
+			                "lcJum": lcQty
+			                //"lcTit": lcDesc 
+			            };
+			            localStorage.setItem("entry", JSON.stringify(entry));
+			            exisorder.push(entry);
+			            localStorage.setItem("MyOrder", JSON.stringify(exisorder));
+			            console.log(localStorage.getItem("MyOrder"));
+			            $(".totitem").text(exisorder.length);
+			            soft.SetCount(exisorder);
+			        } 
+				},
+				GetProc: function(Obj) {
+			        lcFuntion = "GetProc";
+			        console.log("Function run : " + lcFuntion);
+			        lcItem = $('#lccount').data('item');
+			        lcNama = $('#lccount').data('nama');
+			        lcicon = $('#lccount').data('ico');
+			        lcEveid = $('#lccount').data('evenid');
+			        lcPrice = $('#lccount').data('price').replace(/\./g, '');
+			        lcQty = parseFloat($('#lccount').text())
+			        lcDesc = $('#lccount').data('desc');
+
+			        $("#detailItm").fadeOut("slow");
+			        appMain.GetNotif("Success", "Barang dimasukan kedalam keranjang ", "01");
+			        var exisorder = JSON.parse(localStorage.getItem("MyOrder"));
+			        if (exisorder) {
+			            dataexis = $.map(exisorder, function(val, key) {
+			                if (val.lcId === lcItem)
+			                    return val;
+			            })
+			        } else {
+			            dataexis = ''
+			        }
+			        if (dataexis != '') {
+			            for (var i = 0; i < exisorder.length; i++) {
+			                if (exisorder[i].lcId === lcItem) {
+			                    exisorder[i].lcJum += lcQty;
+			                    localStorage.setItem("MyOrder", JSON.stringify(exisorder))
+			                    appOrd.setListOrder(JSON.parse(localStorage.getItem("MyOrder")));
+			                    return;
+			                }
+			            }
+			        } else {
+			            if (exisorder == null)
+			                exisorder = [];
+			            var entry = {
+			                "lcNm": lcNama,
+			                "lcId": lcItem,
+			                "lcEvId": lcEveid,
+			                "lcPrice": parseFloat(lcPrice),
+			                "lcImg": lcicon,
+			                "lcJum": lcQty,
+			                "lcTit": lcDesc
+			            };
+			            localStorage.setItem("entry", JSON.stringify(entry));
+			            exisorder.push(entry);
+			            localStorage.setItem("MyOrder", JSON.stringify(exisorder));
+
+			            $(".mylistcart").css('color', '#f68029');
+			            $(".mylistcart").addClass('blink');
+			            appOrd.setListOrder(JSON.parse(localStorage.getItem("MyOrder")));
+
+
+			        }
+			    }
+			}
+		
+		soft.init();
+		//]]>
+		</script>
+
+</body>
+
+</html>
